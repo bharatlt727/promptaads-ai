@@ -12,6 +12,7 @@ class AdCreate(BaseModel):
     title: str
     description: str
     product_url: str
+    image_url: str | None = None
     category: str = "general"
     keywords: list[str] = []
     bid_amount: float = 0.01
@@ -23,6 +24,7 @@ class AdUpdate(BaseModel):
     title: str | None = None
     description: str | None = None
     product_url: str | None = None
+    image_url: str | None = None
     category: str | None = None
     keywords: list[str] | None = None
     bid_amount: float | None = None
@@ -36,6 +38,7 @@ class AdResponse(BaseModel):
     title: str
     description: str
     product_url: str
+    image_url: str | None = None
     category: str
     keywords: list[str]
     bid_amount: float

@@ -55,6 +55,7 @@ async def create_ad(db: AsyncSession, advertiser_id: str, data: AdCreate) -> Ad:
         title=data.title,
         description=data.description,
         product_url=data.product_url,
+        image_url=data.image_url,
         category=data.category,
         keywords=data.keywords,
         bid_amount=data.bid_amount,

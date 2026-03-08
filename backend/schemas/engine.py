@@ -17,7 +17,10 @@ class MatchResponse(BaseModel):
     """Single matched ad returned by the engine."""
     ad_id: str
     title: str
+    description: str
     text: str
+    product_url: str
+    image_url: str | None = None
     relevance_score: float
     bid_amount: float
     final_score: float

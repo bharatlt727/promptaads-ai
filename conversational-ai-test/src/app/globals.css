@@ -3,66 +3,116 @@
 @tailwind utilities;
 
 :root {
-  --background: #0a0a0a;
-  --foreground: #ededed;
-  --card: #141414;
-  --card-hover: #1c1c1c;
-  --border: #262626;
-  --muted: #888;
-  --accent: #3b82f6;
-  --accent-hover: #2563eb;
-  --sponsored-bg: #1a1a2e;
-  --sponsored-border: #3b82f6;
+  --bg-primary: #09090b;
+  --bg-secondary: #0f0f14;
+  --bg-tertiary: #151519;
+  --bg-elevated: #1a1a22;
+  --bg-hover: #202028;
+  --foreground: #ededf0;
+  --foreground-muted: #71717a;
+  --foreground-subtle: #52525b;
+  --border: #1e1e26;
+  --border-subtle: #27272f;
+  --accent: #7c5cfc;
+  --accent-hover: #6a4ce8;
+  --accent-muted: rgba(124, 92, 252, 0.10);
+  --accent-glow: rgba(124, 92, 252, 0.20);
+  --green: #34d399;
+  --green-muted: rgba(52, 211, 153, 0.10);
+  --amber: #fbbf24;
+  --amber-muted: rgba(251, 191, 36, 0.10);
+  --red: #f87171;
+  --red-muted: rgba(248, 113, 113, 0.10);
+  --blue: #60a5fa;
+  --blue-muted: rgba(96, 165, 250, 0.10);
 }
 
 body {
-  background: var(--background);
+  background: var(--bg-primary);
   color: var(--foreground);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
+/* ── Scrollbar ─────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 3px;
+  background: var(--border-subtle);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--foreground-subtle);
 }
 
-/* Typing animation */
-@keyframes blink {
-  50% { opacity: 0; }
-}
-.cursor-blink::after {
-  content: "▋";
-  animation: blink 1s step-end infinite;
-  color: var(--accent);
-}
-
-/* Fade-in for messages */
+/* ── Animations ────────────────────────── */
 @keyframes fadeSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 .animate-fade-in {
-  animation: fadeSlideIn 0.3s ease-out;
+  animation: fadeSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Pulse for ad card */
-@keyframes adPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.15); }
-  50% { box-shadow: 0 0 0 6px rgba(59, 130, 246, 0); }
+@keyframes dotPulse {
+  0%, 80%, 100% { opacity: 0.15; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1); }
 }
-.ad-card-pulse {
-  animation: adPulse 2s ease-in-out 1;
+.dot-1 { animation: dotPulse 1.4s infinite 0s; }
+.dot-2 { animation: dotPulse 1.4s infinite 0.2s; }
+.dot-3 { animation: dotPulse 1.4s infinite 0.4s; }
+
+/* ── Utilities ────────────────────────── */
+.suggestion-btn {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.suggestion-btn:hover {
+  transform: translateY(-1px);
+  background: var(--accent-muted);
+}
+
+.input-glow:focus-within {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px var(--accent-muted);
+}
+
+.log-badge {
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+/* Ad card gradient border */
+.ad-gradient-border {
+  position: relative;
+  background: var(--bg-elevated);
+}
+.ad-gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, var(--accent), #a78bfa, #ec4899);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* Sponsored shimmer */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.ad-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(124,92,252,0.06), transparent);
+  animation: shimmer 2.5s ease-in-out 1;
+  pointer-events: none;
 }

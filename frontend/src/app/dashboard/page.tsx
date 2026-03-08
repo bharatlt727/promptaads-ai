@@ -12,13 +12,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  BarChart3,
   MousePointerClick,
   Eye,
   FileText,
   Plus,
   TrendingUp,
   ArrowUpRight,
+  Sparkles,
 } from "lucide-react";
 import {
   AreaChart,
@@ -76,116 +76,143 @@ export default function DashboardPage() {
       value: totalAds.toString(),
       sub: `${activeAds} active`,
       icon: FileText,
-      color: "text-blue-500",
+      gradient: "from-blue-500 to-indigo-600",
+      bgLight: "bg-blue-500/10",
+      textColor: "text-blue-400",
     },
     {
       title: "Impressions",
       value: totalImpressions.toLocaleString(),
       sub: "Last 30 days",
       icon: Eye,
-      color: "text-purple-500",
+      gradient: "from-purple-500 to-violet-600",
+      bgLight: "bg-purple-500/10",
+      textColor: "text-purple-400",
     },
     {
       title: "Clicks",
       value: totalClicks.toLocaleString(),
       sub: "Last 30 days",
       icon: MousePointerClick,
-      color: "text-green-500",
+      gradient: "from-emerald-500 to-teal-600",
+      bgLight: "bg-emerald-500/10",
+      textColor: "text-emerald-400",
     },
     {
       title: "CTR",
       value: `${ctr.toFixed(1)}%`,
       sub: "Avg click-through",
       icon: TrendingUp,
-      color: "text-orange-500",
+      gradient: "from-orange-500 to-amber-600",
+      bgLight: "bg-amber-500/10",
+      textColor: "text-amber-400",
     },
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-up">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             Overview of your advertising performance
           </p>
         </div>
         <Link href="/dashboard/ads/new">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
+          <Button className="rounded-xl gradient-primary text-white hover:opacity-90 transition-opacity shadow-md shadow-primary/20 gap-2">
+            <Plus className="h-4 w-4" />
             New Ad
           </Button>
         </Link>
       </div>
 
       {/* Metric Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
         {metrics.map((m) => (
-          <Card key={m.title}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{m.title}</CardTitle>
-              <m.icon className={`h-4 w-4 ${m.color}`} />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{m.value}</div>
-              <p className="text-xs text-muted-foreground">{m.sub}</p>
+          <Card key={m.title} className="stat-card border-0 bg-card overflow-hidden">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[13px] font-medium text-muted-foreground">{m.title}</span>
+                <div className={`w-9 h-9 rounded-xl ${m.bgLight} flex items-center justify-center`}>
+                  <m.icon className={`h-4 w-4 ${m.textColor}`} />
+                </div>
+              </div>
+              <div className="text-2xl font-bold tracking-tight">{m.value}</div>
+              <p className="text-xs text-muted-foreground mt-1">{m.sub}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
       {/* Chart */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Impressions &amp; Clicks</CardTitle>
-          <CardDescription>Daily performance over the last 30 days</CardDescription>
+      <Card className="border-0 bg-card">
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-base font-semibold">Performance Overview</CardTitle>
+              <CardDescription className="text-xs">Daily impressions &amp; clicks over the last 30 days</CardDescription>
+            </div>
+            <div className="flex items-center gap-4 text-xs">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-indigo-500" />
+                <span className="text-muted-foreground">Impressions</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                <span className="text-muted-foreground">Clicks</span>
+              </div>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="h-[300px]">
+          <div className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="fillImpressions" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(262, 83%, 58%)" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="hsl(262, 83%, 58%)" stopOpacity={0} />
+                    <stop offset="5%" stopColor="hsl(239, 84%, 67%)" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="hsl(239, 84%, 67%)" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="fillClicks" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0} />
+                    <stop offset="5%" stopColor="hsl(160, 84%, 39%)" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="hsl(160, 84%, 39%)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                 <XAxis
                   dataKey="name"
-                  tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
+                  tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
                   tickLine={false}
                   axisLine={false}
                 />
                 <YAxis
-                  tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
+                  tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
                   tickLine={false}
                   axisLine={false}
+                  width={40}
                 />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "hsl(var(--card))",
                     border: "1px solid hsl(var(--border))",
-                    borderRadius: "8px",
+                    borderRadius: "12px",
                     color: "hsl(var(--foreground))",
+                    fontSize: "12px",
+                    boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
                   }}
                 />
                 <Area
                   type="monotone"
                   dataKey="impressions"
-                  stroke="hsl(262, 83%, 58%)"
+                  stroke="hsl(239, 84%, 67%)"
                   fill="url(#fillImpressions)"
                   strokeWidth={2}
                 />
                 <Area
                   type="monotone"
                   dataKey="clicks"
-                  stroke="hsl(142, 76%, 36%)"
+                  stroke="hsl(160, 84%, 39%)"
                   fill="url(#fillClicks)"
                   strokeWidth={2}
                 />
@@ -196,63 +223,76 @@ export default function DashboardPage() {
       </Card>
 
       {/* Recent Ads */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+      <Card className="border-0 bg-card">
+        <CardHeader className="flex flex-row items-center justify-between pb-3">
           <div>
-            <CardTitle className="text-lg">Recent Ads</CardTitle>
-            <CardDescription>Your latest ad creatives</CardDescription>
+            <CardTitle className="text-base font-semibold">Recent Ads</CardTitle>
+            <CardDescription className="text-xs">Your latest ad creatives</CardDescription>
           </div>
           <Link href="/dashboard/ads">
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" className="text-xs gap-1 text-muted-foreground hover:text-primary">
               View all
-              <ArrowUpRight className="ml-1 h-3 w-3" />
+              <ArrowUpRight className="h-3 w-3" />
             </Button>
           </Link>
         </CardHeader>
         <CardContent>
           {loading ? (
             <div className="flex h-24 items-center justify-center">
-              <p className="text-sm text-muted-foreground">Loading...</p>
+              <div className="flex gap-1">
+                <div className="w-2 h-2 rounded-full bg-primary/30 animate-bounce" style={{ animationDelay: '0ms' }} />
+                <div className="w-2 h-2 rounded-full bg-primary/30 animate-bounce" style={{ animationDelay: '150ms' }} />
+                <div className="w-2 h-2 rounded-full bg-primary/30 animate-bounce" style={{ animationDelay: '300ms' }} />
+              </div>
             </div>
           ) : ads.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <FileText className="mb-3 h-10 w-10 text-muted-foreground" />
-              <p className="mb-1 text-sm font-medium">No ads yet</p>
-              <p className="mb-4 text-xs text-muted-foreground">
-                Create your first ad to start reaching users
+            <div className="flex flex-col items-center justify-center py-10 text-center">
+              <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mb-4">
+                <Sparkles className="h-6 w-6 text-muted-foreground" />
+              </div>
+              <p className="text-sm font-medium mb-1">No ads yet</p>
+              <p className="text-xs text-muted-foreground mb-5 max-w-[260px]">
+                Create your first ad and the AI engine will match it to relevant user conversations.
               </p>
               <Link href="/dashboard/ads/new">
-                <Button size="sm">
-                  <Plus className="mr-1 h-3 w-3" />
+                <Button size="sm" className="rounded-xl gradient-primary text-white hover:opacity-90 gap-1.5">
+                  <Plus className="h-3 w-3" />
                   Create Ad
                 </Button>
               </Link>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {ads.slice(0, 5).map((ad) => (
                 <div
                   key={ad.id}
-                  className="flex items-center justify-between rounded-lg border border-border p-3"
+                  className="flex items-center justify-between rounded-xl p-3.5 hover:bg-muted/40 transition-colors"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">{ad.title}</p>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {ad.description}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      {ad.image_url && (
+                        <img src={ad.image_url} alt="" className="w-8 h-8 rounded-lg object-cover shrink-0" />
+                      )}
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">{ad.title}</p>
+                        <p className="truncate text-xs text-muted-foreground">{ad.description}</p>
+                      </div>
+                    </div>
                   </div>
-                  <Badge
-                    variant={
-                      ad.status === "active"
-                        ? "success"
-                        : ad.status === "paused"
-                        ? "warning"
-                        : "secondary"
-                    }
-                    className="ml-3 shrink-0"
-                  >
-                    {ad.status}
-                  </Badge>
+                  <div className="flex items-center gap-2 ml-3 shrink-0">
+                    <span className="text-xs text-muted-foreground">${ad.bid_amount?.toFixed(2)}</span>
+                    <Badge
+                      variant={
+                        ad.status === "active"
+                          ? "success"
+                          : ad.status === "paused"
+                          ? "warning"
+                          : "secondary"
+                      }
+                    >
+                      {ad.status}
+                    </Badge>
+                  </div>
                 </div>
               ))}
             </div>

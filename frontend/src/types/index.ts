@@ -35,6 +35,7 @@ export interface Ad {
   title: string;
   description: string;
   product_url: string;
+  image_url?: string | null;
   category: string;
   keywords: string[];
   bid_amount: number;
@@ -46,6 +47,7 @@ export interface AdCreate {
   title: string;
   description: string;
   product_url: string;
+  image_url?: string;
   category?: string;
   keywords?: string[];
   bid_amount?: number;
@@ -56,6 +58,7 @@ export interface AdUpdate {
   title?: string;
   description?: string;
   product_url?: string;
+  image_url?: string;
   category?: string;
   keywords?: string[];
   bid_amount?: number;
@@ -83,7 +86,10 @@ export interface MatchRequest {
 export interface MatchResponse {
   ad_id: string;
   title: string;
+  description: string;
   text: string;
+  product_url: string;
+  image_url?: string | null;
   relevance_score: number;
   bid_amount: number;
   final_score: number;

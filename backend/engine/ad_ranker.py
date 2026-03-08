@@ -29,7 +29,7 @@ logger = structlog.get_logger()
 # ---------------------------------------------------------------------------
 DEFAULT_RELEVANCE_WEIGHT: Final[float] = 0.70
 DEFAULT_BID_WEIGHT: Final[float] = 0.30
-DEFAULT_QUALITY_FLOOR: Final[float] = 0.25      # min relevance to be considered
+DEFAULT_QUALITY_FLOOR: Final[float] = 0.55      # min relevance to be considered
 DEFAULT_MAX_PER_ADVERTISER: Final[int] = 2       # diversity cap
 
 
@@ -105,8 +105,7 @@ class AdRanker:
                 total=len(candidates),
                 floor=quality_floor,
             )
-            # Fallback: keep the single best candidate even if below floor
-            pool = sorted(candidates, key=lambda c: c.relevance_score, reverse=True)[:1]
+            return []
 
         # ------------------------------------------------------------------
         # Step 2 — normalise bid amounts to [0..1]

@@ -37,7 +37,10 @@ class MatchResult:
 
     ad_id: str
     title: str
+    description: str
     text: str                                   # LLM-generated sponsored copy
+    product_url: str
+    image_url: str | None
     relevance_score: float
     bid_amount: float
     final_score: float
@@ -161,7 +164,10 @@ class EngineService:
         return MatchResult(
             ad_id=ad.id,
             title=generated.title,
+            description=ad.description,
             text=generated.text,
+            product_url=ad.product_url,
+            image_url=getattr(ad, 'image_url', None),
             relevance_score=round(winner.relevance_score, 4),
             bid_amount=ad.bid_amount,
             final_score=winner.final_score,
@@ -226,7 +232,10 @@ class EngineService:
                 MatchResult(
                     ad_id=ad.id,
                     title=generated.title,
+                    description=ad.description,
                     text=generated.text,
+                    product_url=ad.product_url,
+                    image_url=getattr(ad, 'image_url', None),
                     relevance_score=round(item.relevance_score, 4),
                     bid_amount=ad.bid_amount,
                     final_score=item.final_score,

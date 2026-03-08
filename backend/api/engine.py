@@ -43,7 +43,10 @@ async def match_ad_endpoint(
     return MatchResponse(
         ad_id=result.ad_id,
         title=result.title,
+        description=result.description,
         text=result.text,
+        product_url=result.product_url,
+        image_url=result.image_url,
         relevance_score=result.relevance_score,
         bid_amount=result.bid_amount,
         final_score=result.final_score,
@@ -72,7 +75,10 @@ async def match_ads_endpoint(
             MatchResponse(
                 ad_id=r.ad_id,
                 title=r.title,
+                description=r.description,
                 text=r.text,
+                product_url=r.product_url,
+                image_url=r.image_url,
                 relevance_score=r.relevance_score,
                 bid_amount=r.bid_amount,
                 final_score=r.final_score,

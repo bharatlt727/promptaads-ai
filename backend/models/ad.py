@@ -30,6 +30,7 @@ class Ad(Base):
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
     product_url: Mapped[str] = mapped_column(String(512), nullable=False)
+    image_url: Mapped[str | None] = mapped_column(String(512), nullable=True, default=None)
     category: Mapped[str] = mapped_column(String(100), nullable=False, default="general")
     keywords: Mapped[list] = mapped_column(JSON, default=list)
     bid_amount: Mapped[float] = mapped_column(Float, nullable=False, default=0.01)

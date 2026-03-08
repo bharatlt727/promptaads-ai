@@ -1,14 +1,16 @@
 "use client";
 
 import { useState, useRef, useEffect, FormEvent } from "react";
-import { Send, Bot, User, Sparkles, ExternalLink, BarChart3, Trash2 } from "lucide-react";
+import { Send, Bot, User, Sparkles, Trash2, MessageCircle, Zap, ArrowRight, Activity, Radio } from "lucide-react";
 
-// ── Types ───────────────────────────────────────────────────────────
-
+// types
 interface Ad {
   ad_id: string;
   title: string;
+  description: string;
   text: string;
+  product_url: string;
+  image_url?: string | null;
   relevance_score: number;
   bid_amount: number;
   final_score: number;
@@ -29,8 +31,6 @@ interface SdkLog {
   message: string;
 }
 
-// ── Main Page ───────────────────────────────────────────────────────
-
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -50,17 +50,10 @@ export default function ChatPage() {
 
   const addLog = (type: SdkLog["type"], message: string) => {
     setSdkLogs((prev) => [
-      {
-        id: crypto.randomUUID(),
-        time: new Date().toLocaleTimeString(),
-        type,
-        message,
-      },
+      { id: crypto.randomUUID(), time: new Date().toLocaleTimeString(), type, message },
       ...prev,
     ].slice(0, 50));
   };
-
-  // ── Send message ────────────────────────────────────────────────
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -73,15 +66,12 @@ export default function ChatPage() {
       content: prompt,
       timestamp: new Date(),
     };
-
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setIsLoading(true);
 
     try {
-      // 1. Get AI response
-      addLog("info", `Sending prompt: "${prompt.slice(0, 60)}..."`);
-
+      addLog("info", "Sending prompt: \"" + prompt.slice(0, 60) + "...\"");
       const chatRes = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -92,14 +82,10 @@ export default function ChatPage() {
           })),
         }),
       });
-
       const { text, error: chatError } = await chatRes.json();
       if (chatError) throw new Error(chatError);
-
-      addLog("info", `AI response received (${text.length} chars)`);
-
-      // 2. Match ad via SDK (server-side proxy)
-      addLog("match", `SDK getAd("${prompt.slice(0, 40)}...")`);
+      addLog("info", "AI response received (" + text.length + " chars)");
+      addLog("match", "SDK getAd(\"" + prompt.slice(0, 40) + "...\")");
 
       let ad: Ad | null = null;
       try {
@@ -110,224 +96,403 @@ export default function ChatPage() {
         });
         const adData = await adRes.json();
         ad = adData.ad;
-
         if (ad) {
-          addLog(
-            "match",
-            `✓ Ad matched: "${ad.title}" (relevance: ${ad.relevance_score}, final: ${ad.final_score})`
-          );
-
-          // 3. Track impression
-          addLog("impression", `SDK trackImpression("${ad.ad_id.slice(0, 8)}...")`);
+          addLog("match", "Matched: \"" + ad.title + "\" (relevance: " + (ad.relevance_score * 100).toFixed(0) + "%)");
+          addLog("impression", "trackImpression(\"" + ad.ad_id.slice(0, 8) + "...\")");
           await fetch("/api/analytics", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ ad_id: ad.ad_id, event: "impression" }),
           });
-          addLog("impression", `✓ Impression tracked`);
+          addLog("impression", "Impression tracked");
         } else {
-          addLog("match", `No matching ad found`);
+          addLog("match", "No matching ad found");
         }
       } catch (adErr: any) {
-        addLog("error", `Ad match failed: ${adErr.message}`);
+        addLog("error", "Ad match failed: " + adErr.message);
       }
 
-      // 4. Add assistant message
-      const assistantMsg: Message = {
-        id: crypto.randomUUID(),
-        role: "assistant",
-        content: text,
-        ad,
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, assistantMsg]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          content: text,
+          ad,
+          timestamp: new Date(),
+        },
+      ]);
     } catch (err: any) {
-      addLog("error", `Chat failed: ${err.message}`);
-      const errorMsg: Message = {
-        id: crypto.randomUUID(),
-        role: "assistant",
-        content: "Sorry, something went wrong. Please try again.",
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, errorMsg]);
+      addLog("error", "Chat failed: " + err.message);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          content: "Sorry, something went wrong. Please try again.",
+          timestamp: new Date(),
+        },
+      ]);
     } finally {
       setIsLoading(false);
       inputRef.current?.focus();
     }
   };
 
-  // ── Click tracking ──────────────────────────────────────────────
-
   const handleAdClick = async (ad: Ad) => {
-    addLog("click", `SDK trackClick("${ad.ad_id.slice(0, 8)}...")`);
+    addLog("click", "trackClick(\"" + ad.ad_id.slice(0, 8) + "...\")");
     try {
       await fetch("/api/analytics", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ad_id: ad.ad_id, event: "click" }),
       });
-      addLog("click", `✓ Click tracked for "${ad.title}"`);
+      addLog("click", "Click tracked for \"" + ad.title + "\"");
     } catch (err: any) {
-      addLog("error", `Click tracking failed: ${err.message}`);
+      addLog("error", "Click tracking failed: " + err.message);
     }
+    if (ad.product_url)
+      window.open(ad.product_url, "_blank", "noopener,noreferrer");
   };
 
-  // ── Render ──────────────────────────────────────────────────────
+  const logColors: Record<string, string> = {
+    match: "bg-[var(--accent-muted)] text-[var(--accent)]",
+    impression: "bg-[var(--green-muted)] text-[var(--green)]",
+    click: "bg-[var(--amber-muted)] text-[var(--amber)]",
+    error: "bg-[var(--red-muted)] text-[var(--red)]",
+    info: "bg-[var(--blue-muted)] text-[var(--blue)]",
+  };
 
   return (
-    <div className="h-screen flex flex-col">
+    <div
+      className="h-screen flex flex-col"
+      style={{ background: "var(--bg-primary)" }}
+    >
       {/* Header */}
-      <header className="border-b border-[var(--border)] px-6 py-3 flex items-center justify-between shrink-0">
+      <header
+        className="px-5 py-3 flex items-center justify-between shrink-0"
+        style={{
+          background: "var(--bg-secondary)",
+        }}
+      >
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-[var(--accent)] flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-white" />
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center"
+            style={{ background: "var(--accent)" }}
+          >
+            <MessageCircle className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="text-sm font-semibold">Conversational AI Test</h1>
-            <p className="text-xs text-[var(--muted)]">
-              PromptAds SDK Integration Demo
+            <h1
+              className="text-sm font-semibold"
+              style={{ color: "var(--foreground)" }}
+            >
+              Conversational AI
+            </h1>
+            <p
+              className="text-[11px] flex items-center gap-1.5"
+              style={{ color: "var(--foreground-muted)" }}
+            >
+              <span
+                className="w-1.5 h-1.5 rounded-full inline-block"
+                style={{ background: "var(--green)" }}
+              />
+              PromptAds SDK Active
             </p>
           </div>
         </div>
-        <button
-          onClick={() => setShowPanel(!showPanel)}
-          className="flex items-center gap-2 px-3 py-1.5 text-xs rounded-md border border-[var(--border)] hover:bg-[var(--card)] transition-colors"
-        >
-          <BarChart3 className="w-3 h-3" />
-          {showPanel ? "Hide" : "Show"} SDK Logs
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              setMessages([]);
+              setSdkLogs([]);
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors"
+            style={{
+              color: "var(--foreground-muted)",
+              background: "var(--bg-tertiary)",
+            }}
+          >
+            <Trash2 className="w-3 h-3" /> Clear
+          </button>
+          <button
+            onClick={() => setShowPanel(!showPanel)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors"
+            style={{
+              color: showPanel ? "var(--accent)" : "var(--foreground-muted)",
+              background: showPanel
+                ? "var(--accent-muted)"
+                : "var(--bg-tertiary)",
+            }}
+          >
+            <Activity className="w-3 h-3" /> Logs
+            {sdkLogs.length > 0 && (
+              <span
+                className="ml-0.5 w-4 h-4 rounded-full text-white text-[9px] flex items-center justify-center font-bold"
+                style={{ background: "var(--accent)" }}
+              >
+                {sdkLogs.length > 9 ? "9+" : sdkLogs.length}
+              </span>
+            )}
+          </button>
+        </div>
       </header>
 
-      {/* Body */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Chat Area */}
+        {/* Chat area */}
         <div className="flex-1 flex flex-col">
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
+          <div className="flex-1 overflow-y-auto px-4 py-6">
             {messages.length === 0 && (
-              <div className="flex flex-col items-center justify-center h-full text-center">
-                <div className="w-16 h-16 rounded-2xl bg-[var(--card)] border border-[var(--border)] flex items-center justify-center mb-4">
-                  <Bot className="w-8 h-8 text-[var(--accent)]" />
+              <div className="flex flex-col items-center justify-center h-full text-center max-w-md mx-auto">
+                <div
+                  className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5"
+                  style={{ background: "var(--accent-muted)" }}
+                >
+                  <Zap
+                    className="w-7 h-7"
+                    style={{ color: "var(--accent)" }}
+                  />
                 </div>
-                <h2 className="text-lg font-medium mb-2">
-                  Start a Conversation
+                <h2
+                  className="text-xl font-semibold mb-2"
+                  style={{ color: "var(--foreground)" }}
+                >
+                  PromptAds AI Demo
                 </h2>
-                <p className="text-sm text-[var(--muted)] max-w-md">
-                  Chat with the AI and see PromptAds contextual ads appear
-                  naturally in responses. Try topics like writing, coding, coffee, travel, etc.
+                <p
+                  className="text-[13px] leading-relaxed mb-8 max-w-sm"
+                  style={{ color: "var(--foreground-muted)" }}
+                >
+                  Chat naturally and see contextual ads matched by AI
+                  embeddings. Ads appear only when relevant to your
+                  conversation.
                 </p>
-                <div className="flex flex-wrap gap-2 mt-6">
+                <div className="grid grid-cols-2 gap-2.5 w-full">
                   {[
-                    "Help me write a blog post",
-                    "Best laptops for coding",
-                    "How to brew great coffee",
-                    "Tips for learning Python",
-                  ].map((suggestion) => (
+                    { text: "Help me write a blog post", icon: "✍️" },
+                    { text: "Best laptops for coding", icon: "💻" },
+                    { text: "How to brew great coffee", icon: "☕" },
+                    { text: "Tips for learning Python", icon: "🐍" },
+                  ].map((item) => (
                     <button
-                      key={suggestion}
+                      key={item.text}
                       onClick={() => {
-                        setInput(suggestion);
+                        setInput(item.text);
                         inputRef.current?.focus();
                       }}
-                      className="px-3 py-1.5 text-xs rounded-full border border-[var(--border)] hover:bg-[var(--card)] hover:border-[var(--accent)] transition-all"
-                    >
-                      {suggestion}
+                      className="suggestion-btn flex items-center gap-2.5 px-3.5 py-3 text-left text-[13px] rounded-xl transition-all"
+                      style={{
+                        background: "var(--bg-secondary)",
+                        color: "var(--foreground)",
+                      }}                    >
+                      <span className="text-base">{item.icon}</span>
+                      <span className="font-medium">{item.text}</span>
                     </button>
                   ))}
                 </div>
               </div>
             )}
 
-            {messages.map((msg) => (
-              <div key={msg.id} className="animate-fade-in">
-                <div
-                  className={`flex gap-3 ${
-                    msg.role === "user" ? "justify-end" : "justify-start"
-                  }`}
-                >
-                  {msg.role === "assistant" && (
-                    <div className="w-7 h-7 rounded-full bg-[var(--accent)]/20 flex items-center justify-center shrink-0 mt-0.5">
-                      <Bot className="w-4 h-4 text-[var(--accent)]" />
-                    </div>
-                  )}
+            <div className="max-w-5xl mx-auto space-y-4">
+              {messages.map((msg) => (
+                <div key={msg.id} className="animate-fade-in">
                   <div
-                    className={`max-w-[70%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
-                      msg.role === "user"
-                        ? "bg-[var(--accent)] text-white"
-                        : "bg-[var(--card)] border border-[var(--border)]"
-                    }`}
+                    className={
+                      "flex gap-2.5 " +
+                      (msg.role === "user" ? "justify-end" : "justify-start")
+                    }
                   >
-                    {msg.content}
+                    {msg.role === "assistant" && (
+                      <div
+                        className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
+                        style={{ background: "var(--accent-muted)" }}
+                      >
+                        <Bot
+                          className="w-3.5 h-3.5"
+                          style={{ color: "var(--accent)" }}
+                        />
+                      </div>
+                    )}
+                    <div
+                      className="max-w-[75%] rounded-xl px-3.5 py-2.5 text-[13px] leading-relaxed"
+                      style={
+                        msg.role === "user"
+                          ? { background: "var(--accent)", color: "#fff" }
+                          : {
+                              background: "var(--bg-elevated)",
+                              color: "var(--foreground)",
+                            }
+                      }
+                    >
+                      <div className="whitespace-pre-wrap">{msg.content}</div>
+                      <div
+                        className="text-[10px] mt-1.5"
+                        style={{
+                          color:
+                            msg.role === "user"
+                              ? "rgba(255,255,255,0.5)"
+                              : "var(--foreground-subtle)",
+                        }}
+                      >
+                        {msg.timestamp.toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </div>
+                    </div>
+                    {msg.role === "user" && (
+                      <div
+                        className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
+                        style={{
+                          background: "var(--bg-elevated)",
+                        }}
+                      >
+                        <User
+                          className="w-3.5 h-3.5"
+                          style={{ color: "var(--foreground-muted)" }}
+                        />
+                      </div>
+                    )}
                   </div>
-                  {msg.role === "user" && (
-                    <div className="w-7 h-7 rounded-full bg-[var(--foreground)]/10 flex items-center justify-center shrink-0 mt-0.5">
-                      <User className="w-4 h-4 text-[var(--foreground)]" />
+
+                  {/* Ad Card */}
+                  {msg.ad && (
+                    <div className="ml-10 mt-2.5 animate-fade-in">
+                      <div
+                        className="ad-gradient-border ad-shimmer relative max-w-[75%] rounded-xl overflow-hidden"
+                        style={{ background: "var(--bg-elevated)" }}
+                      >
+                        {msg.ad.image_url && (
+                          <div
+                            className="w-full h-32 overflow-hidden"
+                          >
+                            <img
+                              src={msg.ad.image_url}
+                              alt={msg.ad.title}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        )}
+                        <div className="p-3.5">
+                          <div className="flex items-center gap-1.5 mb-2">
+                            <Sparkles
+                              className="w-3 h-3"
+                              style={{ color: "var(--accent)" }}
+                            />
+                            <span
+                              className="text-[9px] font-semibold uppercase tracking-[0.1em]"
+                              style={{ color: "var(--accent)" }}
+                            >
+                              Sponsored
+                            </span>
+                            <span
+                              className="ml-auto inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium"
+                              style={{
+                                background: "var(--accent-muted)",
+                                color: "var(--accent)",
+                              }}
+                            >
+                              {(msg.ad.relevance_score * 100).toFixed(0)}% match
+                            </span>
+                          </div>
+                          <p
+                            className="text-[13px] font-semibold mb-1"
+                            style={{ color: "var(--foreground)" }}
+                          >
+                            {msg.ad.title}
+                          </p>
+                          <p
+                            className="text-[12px] leading-relaxed mb-3"
+                            style={{ color: "var(--foreground-muted)" }}
+                          >
+                            {msg.ad.description || msg.ad.text}
+                          </p>
+                          <button
+                            onClick={() => handleAdClick(msg.ad!)}
+                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[11px] font-medium text-white rounded-lg transition-all group"
+                            style={{ background: "var(--accent)" }}
+                          >
+                            Learn more{" "}
+                            <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
+              ))}
 
-                {/* Inline Ad Card */}
-                {msg.ad && (
-                  <div className="ml-10 mt-2 animate-fade-in">
-                    <div className="ad-card-pulse max-w-[70%] rounded-xl border border-[var(--sponsored-border)]/30 bg-[var(--sponsored-bg)] p-3.5 transition-all hover:border-[var(--sponsored-border)]/60">
-                      <div className="flex items-center gap-1.5 mb-1.5">
-                        <Sparkles className="w-3 h-3 text-[var(--accent)]" />
-                        <span className="text-[10px] font-medium uppercase tracking-wider text-[var(--accent)]">
-                          Sponsored
-                        </span>
-                        <span className="text-[10px] text-[var(--muted)] ml-auto">
-                          relevance {(msg.ad.relevance_score * 100).toFixed(0)}%
-                        </span>
-                      </div>
-                      <p className="text-sm font-medium mb-1">
-                        {msg.ad.title}
-                      </p>
-                      <p className="text-xs text-[var(--muted)] leading-relaxed mb-2">
-                        {msg.ad.text}
-                      </p>
-                      <button
-                        onClick={() => handleAdClick(msg.ad!)}
-                        className="flex items-center gap-1.5 text-xs text-[var(--accent)] hover:underline"
-                      >
-                        Learn more
-                        <ExternalLink className="w-3 h-3" />
-                      </button>
+              {isLoading && (
+                <div className="flex gap-2.5 animate-fade-in">
+                  <div
+                    className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+                    style={{ background: "var(--accent-muted)" }}
+                  >
+                    <Bot
+                      className="w-3.5 h-3.5"
+                      style={{ color: "var(--accent)" }}
+                    />
+                  </div>
+                  <div
+                    className="rounded-xl px-4 py-3"
+                    style={{
+                      background: "var(--bg-elevated)",
+                    }}
+                  >
+                    <div className="flex gap-1 items-center">
+                      <div
+                        className="w-1.5 h-1.5 rounded-full dot-1"
+                        style={{ background: "var(--accent)" }}
+                      />
+                      <div
+                        className="w-1.5 h-1.5 rounded-full dot-2"
+                        style={{ background: "var(--accent)" }}
+                      />
+                      <div
+                        className="w-1.5 h-1.5 rounded-full dot-3"
+                        style={{ background: "var(--accent)" }}
+                      />
                     </div>
                   </div>
-                )}
-              </div>
-            ))}
-
-            {isLoading && (
-              <div className="flex gap-3 animate-fade-in">
-                <div className="w-7 h-7 rounded-full bg-[var(--accent)]/20 flex items-center justify-center shrink-0">
-                  <Bot className="w-4 h-4 text-[var(--accent)]" />
                 </div>
-                <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl px-4 py-2.5 text-sm">
-                  <span className="cursor-blink">Thinking</span>
-                </div>
-              </div>
-            )}
-
-            <div ref={messagesEndRef} />
+              )}
+              <div ref={messagesEndRef} />
+            </div>
           </div>
 
           {/* Input */}
-          <div className="border-t border-[var(--border)] px-4 py-3 shrink-0">
-            <form onSubmit={handleSubmit} className="flex gap-2 max-w-3xl mx-auto">
-              <input
-                ref={inputRef}
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask anything..."
-                disabled={isLoading}
-                className="flex-1 bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[var(--accent)] transition-colors placeholder:text-[var(--muted)] disabled:opacity-50"
-              />
+          <div
+            className="px-4 py-3 shrink-0"
+            style={{
+              background: "var(--bg-secondary)",
+            }}
+          >
+            <form
+              onSubmit={handleSubmit}
+              className="flex gap-2.5 max-w-2xl mx-auto"
+            >
+              <div
+                className="flex-1 input-glow rounded-xl transition-all flex items-center"
+                style={{
+                  background: "var(--bg-tertiary)",
+                }}
+              >
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Ask anything..."
+                  disabled={isLoading}
+                  className="flex-1 bg-transparent px-4 py-2.5 text-[13px] outline-none disabled:opacity-50 placeholder:opacity-40"
+                  style={{ color: "var(--foreground)" }}
+                />
+              </div>
               <button
                 type="submit"
                 disabled={!input.trim() || isLoading}
-                className="bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-30 text-white rounded-xl px-4 py-2.5 transition-colors"
+                className="rounded-xl px-4 py-2.5 transition-all disabled:opacity-20"
+                style={{ background: "var(--accent)", color: "#fff" }}
               >
                 <Send className="w-4 h-4" />
               </button>
@@ -337,47 +502,79 @@ export default function ChatPage() {
 
         {/* SDK Logs Panel */}
         {showPanel && (
-          <div className="w-80 border-l border-[var(--border)] flex flex-col shrink-0 bg-[#0c0c0c]">
-            <div className="px-4 py-3 border-b border-[var(--border)] flex items-center justify-between">
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">
-                SDK Activity Log
-              </h2>
+          <div
+            className="w-72 flex flex-col shrink-0"
+            style={{
+              background: "var(--bg-secondary)",
+            }}
+          >
+            <div
+              className="px-3.5 py-2.5 flex items-center justify-between"
+            >
+              <div className="flex items-center gap-2">
+                <Activity
+                  className="w-3.5 h-3.5"
+                  style={{ color: "var(--accent)" }}
+                />
+                <h2
+                  className="text-[11px] font-semibold uppercase tracking-wider"
+                  style={{ color: "var(--foreground-muted)" }}
+                >
+                  SDK Activity
+                </h2>
+              </div>
               <button
                 onClick={() => setSdkLogs([])}
-                className="text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+                className="w-6 h-6 rounded-md flex items-center justify-center transition-colors"
+                style={{ color: "var(--foreground-subtle)" }}
                 title="Clear logs"
               >
                 <Trash2 className="w-3 h-3" />
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1.5 font-mono text-[11px]">
+            <div className="flex-1 overflow-y-auto px-2.5 py-2.5 space-y-1">
               {sdkLogs.length === 0 && (
-                <p className="text-[var(--muted)] text-center py-8">
-                  SDK events will appear here...
-                </p>
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <Radio
+                    className="w-5 h-5 mb-2"
+                    style={{ color: "var(--foreground-subtle)" }}
+                  />
+                  <p
+                    className="text-[11px]"
+                    style={{ color: "var(--foreground-subtle)" }}
+                  >
+                    Waiting for events...
+                  </p>
+                </div>
               )}
               {sdkLogs.map((log) => (
                 <div
                   key={log.id}
-                  className="flex gap-2 py-1 border-b border-[var(--border)]/30 animate-fade-in"
+                  className="flex flex-col gap-1 py-2 px-2.5 rounded-lg animate-fade-in"
+                  style={{
+                    background: "var(--bg-tertiary)",
+                  }}
                 >
-                  <span className="text-[var(--muted)] shrink-0">{log.time}</span>
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className={
+                        "log-badge shrink-0 px-1.5 py-0.5 rounded " +
+                        (logColors[log.type] || "")
+                      }
+                    >
+                      {log.type}
+                    </span>
+                    <span
+                      className="text-[9px] ml-auto shrink-0"
+                      style={{ color: "var(--foreground-subtle)" }}
+                    >
+                      {log.time}
+                    </span>
+                  </div>
                   <span
-                    className={`shrink-0 px-1 rounded text-[10px] font-medium ${
-                      log.type === "match"
-                        ? "bg-purple-500/20 text-purple-400"
-                        : log.type === "impression"
-                        ? "bg-green-500/20 text-green-400"
-                        : log.type === "click"
-                        ? "bg-yellow-500/20 text-yellow-400"
-                        : log.type === "error"
-                        ? "bg-red-500/20 text-red-400"
-                        : "bg-blue-500/20 text-blue-400"
-                    }`}
+                    className="text-[11px] break-words leading-relaxed"
+                    style={{ color: "var(--foreground-muted)" }}
                   >
-                    {log.type}
-                  </span>
-                  <span className="text-[var(--foreground)]/80 break-words min-w-0">
                     {log.message}
                   </span>
                 </div>
