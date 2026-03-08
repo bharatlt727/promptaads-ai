@@ -1,0 +1,34 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "promptads-ai"
+version = "0.1.0"
+description = "PromptAds AI SDK — contextual ads for AI-powered apps"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+authors = [{ name = "Abhishek Verma" }]
+keywords = ["ai", "ads", "contextual-ads", "llm", "chatbot", "prompt", "advertising"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries",
+    "Typing :: Typed",
+]
+
+[project.urls]
+Homepage = "https://github.com/abhishek/promptads-ai"
+Documentation = "https://github.com/abhishek/promptads-ai/tree/main/docs"
+Repository = "https://github.com/abhishek/promptads-ai"
+Issues = "https://github.com/abhishek/promptads-ai/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["promptads_ai"]

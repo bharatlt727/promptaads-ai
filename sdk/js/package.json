@@ -1,0 +1,49 @@
+{
+  "name": "promptads-ai",
+  "version": "0.1.0",
+  "description": "PromptAds AI SDK — contextual ads for AI-powered apps",
+  "author": "Abhishek Verma",
+  "license": "MIT",
+  "keywords": [
+    "ai",
+    "ads",
+    "contextual-ads",
+    "llm",
+    "chatbot",
+    "prompt",
+    "advertising",
+    "monetization"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/abhishek/promptads-ai"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup index.ts --format cjs,esm --dts --clean",
+    "dev": "tsup index.ts --format cjs,esm --dts --watch",
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
