@@ -55,12 +55,12 @@ How would you like to start?
 
 Walks you through 4 phases before starting servers:
 
-| Phase | What it does |
-|-------|-------------|
+| Phase               | What it does                                                                                                                                                                |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **1. Dependencies** | Checks Python 3.11+, Node.js 18+, PostgreSQL 16, Qdrant, Redis. If missing, asks `Install? [Y/n]` and installs via brew/apt/yum. If already installed, shows version with ✓ |
-| **2. Database** | Asks for PostgreSQL port, user, password, database name (smart defaults provided) |
-| **3. API Keys** | Asks for AI provider (Gemini/OpenAI) and API key. If existing `.env` found, asks to keep it |
-| **4. Project Deps** | Runs `pip install -r requirements.txt`, `npm install` for dashboard and chat app |
+| **2. Database**     | Asks for PostgreSQL port, user, password, database name (smart defaults provided)                                                                                           |
+| **3. API Keys**     | Asks for AI provider (Gemini/OpenAI) and API key. If existing `.env` found, asks to keep it                                                                                 |
+| **4. Project Deps** | Runs `pip install -r requirements.txt`, `npm install` for dashboard and chat app                                                                                            |
 
 Then starts all 6 servers automatically.
 
