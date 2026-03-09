@@ -51,6 +51,21 @@ How would you like to start?
   2) Manual      — Skip setup, just start the servers (deps already installed)
 ```
 
+### Stopping Services
+
+```bash
+./stop.sh
+```
+
+The stop script runs in **two phases**:
+
+| Phase                 | Action                                                                  | Trigger                                              |
+| --------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------- |
+| **1. App services**   | Stops Dashboard (:3002), Conversational AI (:3050), Backend API (:8000) | Runs immediately                                     |
+| **2. Infrastructure** | Asks about PostgreSQL (:5433), Qdrant (:6333), Redis (:6379)            | **Ctrl+C** → stop them too, **Enter** → keep running |
+
+This lets you restart app services quickly without tearing down databases.
+
 ### Auto Setup (Option 1) — Fresh clone, nothing installed
 
 Walks you through 4 phases before starting servers:
@@ -105,13 +120,13 @@ When a user sends a prompt to your AI app, the PromptAds engine runs this pipeli
 
 1. **Embedding** — The user's prompt is converted into a 3072-dimensional vector using Gemini's `gemini-embedding-001` (or OpenAI's `text-embedding-3-small`)
 2. **Vector Search** — The prompt vector is compared against all ad embeddings stored in Qdrant using cosine similarity
-3. **Score Filtering** — Ads below a 0.55 relevance threshold are discarded (prevents irrelevant matches)
+3. **Score Filtering** — Ads below a 0.60 relevance threshold are discarded (prevents irrelevant matches)
 4. **Ranking** — Remaining ads are scored: `final_score = (relevance × 0.70) + (normalized_bid × 0.30)`
-5. **Response** — The highest scoring ad is returned with title, description, image, relevance score, and product URL
+5. **Multi-Ad Return** — Up to N top-scoring ads are returned (configurable, default 5)
 
 ### When does an ad NOT show?
 
-If no ad in the catalog exceeds the 0.55 similarity threshold for the user's prompt, the engine returns nothing. This means your app never shows irrelevant ads.
+If no ad in the catalog exceeds the 0.60 similarity threshold for the user's prompt, the engine returns nothing. This means your app never shows irrelevant ads.
 
 ---
 
@@ -137,10 +152,14 @@ When an ad is created, the backend automatically:
 A full working chatbot that demonstrates the SDK in action:
 
 - Chat powered by **Gemini 2.5 Flash** via `@google/genai`
-- After each AI response, calls the PromptAds `match-ad` API
-- If a relevant ad is found, renders it inline as a styled card
+- **Streaming responses** — AI answers stream in real-time, character by character
+- **Markdown rendering** — Responses render with full formatting (bold, lists, code blocks, headings) via `react-markdown`
+- **Multi-ad matching** — Calls `/engine/match-ads` to fetch up to 5 relevant ads per response
+- **Natural ad blending** — Matched ads are appended as a short follow-up recommendation at the end of the AI response (never replaces or shortens the original)
+- Subtle inline ad buttons below each response for direct product links
 - Tracks impressions and clicks through the analytics API
 - Right sidebar shows real-time **SDK Activity** logs
+- **Dark mode** UI with accent-colored theme
 
 This is the reference implementation showing how any AI app can integrate PromptAds.
 
@@ -351,7 +370,7 @@ Open http://localhost:3050 (Conversational AI demo) and type:
 
 > "What is a CPU and how does it work?"
 
-The AI will respond with an answer, and if the ad matches (relevance > 55%), it will appear as an inline sponsored card below the response.
+The AI will stream a markdown-formatted answer in real-time. If ads match (relevance > 60%), a natural recommendation is appended at the end of the response, with subtle product buttons below.
 
 ### 4. Check the SDK Activity Log
 
@@ -400,6 +419,7 @@ curl -s -X POST http://localhost:8000/engine/match-ad \
 ```
 promptads-ai/
 ├── start.sh                       # One-command start (all services)
+├── stop.sh                        # Graceful stop (apps first, infra optional)
 ├── .env.example                   # Environment template
 ├── docker-compose.yml             # Docker setup
 │
@@ -436,9 +456,10 @@ promptads-ai/
 │
 ├── conversational-ai-test/        # Demo chatbot (Gemini + PromptAds)
 │   └── src/app/
-│       ├── page.tsx               # Chat UI with inline ads
-│       ├── api/chat/route.ts      # Gemini chat proxy
-│       ├── api/ad/route.ts        # PromptAds match proxy
+│       ├── page.tsx               # Streaming chat UI with markdown + inline ads
+│       ├── api/chat/route.ts      # Gemini streaming chat proxy
+│       ├── api/ad/route.ts        # PromptAds multi-ad match proxy
+│       ├── api/blend/route.ts     # AI ad recommendation blender
 │       └── api/analytics/route.ts # Analytics proxy
 │
 ├── sdk/
@@ -456,17 +477,17 @@ promptads-ai/
 
 ## ✦ Tech Stack
 
-| Layer          | Technology                                          | Purpose                                    |
-| -------------- | --------------------------------------------------- | ------------------------------------------ |
-| **Backend**    | FastAPI, SQLAlchemy, Pydantic                       | REST API, ORM, validation                  |
-| **AI Engine**  | Gemini / OpenAI API                                 | Embeddings + ad text generation            |
-| **Vector DB**  | Qdrant                                              | Cosine similarity search on ad embeddings  |
-| **Database**   | PostgreSQL 16 + Alembic                             | Ads, users, analytics storage + migrations |
-| **Cache**      | Redis 7                                             | Rate limiting & response caching           |
-| **Dashboard**  | Next.js 15, React 19, shadcn/ui, Tailwind, Recharts | Advertiser web UI                          |
-| **Chat Demo**  | Next.js 15, `@google/genai`, PromptAds SDK          | Live SDK demo                              |
-| **JS SDK**     | TypeScript, zero dependencies                       | `npm install promptads-ai`                 |
-| **Python SDK** | Pure Python stdlib                                  | `pip install promptads-ai`                 |
+| Layer          | Technology                                                   | Purpose                                    |
+| -------------- | ------------------------------------------------------------ | ------------------------------------------ |
+| **Backend**    | FastAPI, SQLAlchemy, Pydantic                                | REST API, ORM, validation                  |
+| **AI Engine**  | Gemini / OpenAI API                                          | Embeddings + ad text generation            |
+| **Vector DB**  | Qdrant                                                       | Cosine similarity search on ad embeddings  |
+| **Database**   | PostgreSQL 16 + Alembic                                      | Ads, users, analytics storage + migrations |
+| **Cache**      | Redis 7                                                      | Rate limiting & response caching           |
+| **Dashboard**  | Next.js 15, React 19, shadcn/ui, Tailwind, Recharts          | Advertiser web UI                          |
+| **Chat Demo**  | Next.js 15, `@google/genai`, `react-markdown`, PromptAds SDK | Streaming chat with markdown + ad blending |
+| **JS SDK**     | TypeScript, zero dependencies                                | `npm install promptads-ai`                 |
+| **Python SDK** | Pure Python stdlib                                           | `pip install promptads-ai`                 |
 
 ---
 
