@@ -1,7 +1,7 @@
 <p align="center">
   <h1 align="center">✦ PromptAds AI</h1>
   <p align="center">
-    <strong>AI-native contextual advertising engine for chatbots, copilots & AI apps</strong>
+    <strong>AI-native contextual advertising engine/AdSense for chatbots, copilots and LLM applications.</strong>
   </p>
   <p align="center">
     <a href="#-one-command-start">Quick Start</a> &middot;
