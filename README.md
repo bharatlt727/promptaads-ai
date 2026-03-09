@@ -3,7 +3,7 @@
 
 </p>
 <p align="center">
-  <strong>Monetize your AI app with contextual ads — no tracking, no cookies, no banners.</strong>
+  <strong>Monetize your AI app with contextual ads no tracking, no cookies, no banners.</strong>
 </p>
 
 <p align="center">
@@ -22,7 +22,7 @@
   <a href="https://www.linkedin.com/in/abhishek-ayu/"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" /></a>
   <img src="https://img.shields.io/badge/LLM_Powered-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white" alt="LLM" />
   <img src="https://img.shields.io/badge/AI_Native-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white" alt="AI" />
-  <img src="https://img.shields.io/badge/AdSense_Alternative-4285F4?style=for-the-badge&logo=googleadsense&logoColor=white" alt="AdSense" />
+  <img src="https://img.shields.io/badge/LLM_AdSense-4285F4?style=for-the-badge&logo=googleadsense&logoColor=white" alt="AdSense" />
 </p>
 
 <p align="center">
@@ -62,9 +62,9 @@
 
 ## What is PromptAds AI?
 
-PromptAds AI is an open-source platform that lets AI applications — chatbots, copilots, search agents — serve **contextual, non-intrusive ads** that match the _semantic meaning_ of the user's conversation. No banners. No pop-ups. No cookies. Ads are matched to content, not people.
+PromptAds AI is an open-source platform that lets AI applications chatbots, copilots, search agents serve **contextual, non-intrusive ads** that match the _semantic meaning_ of the user's conversation. No banners. No pop-ups. No cookies. Ads are matched to content, not people.
 
-**The idea:** A user asks your AI chatbot _"what's the best laptop for coding?"_ — PromptAds embeds that prompt as a vector, searches your ad catalog in Qdrant, ranks by `relevance × bid`, and returns the single best ad in under 50ms.
+**The idea:** A user asks your AI chatbot _"what's the best laptop for coding?"_ PromptAds embeds that prompt as a vector, searches your ad catalog in Qdrant, ranks by `relevance × bid`, and returns the single best ad in under 50ms.
 
 ```
 User prompt                      PromptAds Engine
