@@ -14,32 +14,15 @@
 <p align="center">
   <a href="https://github.com/abhishekayu/promptads-ai/stargazers"><img src="https://img.shields.io/github/stars/abhishekayu/promptads-ai?style=for-the-badge" alt="GitHub stars" /></a>
   <a href="https://github.com/abhishekayu/promptads-ai/blob/main/LICENSE"><img src="https://img.shields.io/github/license/abhishekayu/promptads-ai?style=for-the-badge" alt="License" /></a>
+  <img src="https://img.shields.io/github/downloads/abhishekayu/promptads-ai/total?style=for-the-badge&label=Downloads" alt="Downloads" />
+  <img src="https://img.shields.io/github/watchers/abhishekayu/promptads-ai?style=for-the-badge&label=Viewers" alt="Viewers" />
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
-  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
-  <img src="https://img.shields.io/badge/Next.js_15-000000?style=for-the-badge&logo=next.js&logoColor=white" alt="Next.js" />
-  <img src="https://img.shields.io/badge/React_19-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React" />
-  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
-  <img src="https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/PostgreSQL_16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
-  <img src="https://img.shields.io/badge/Qdrant-DC382D?style=for-the-badge&logo=qdrant&logoColor=white" alt="Qdrant" />
-  <img src="https://img.shields.io/badge/Redis-FF4438?style=for-the-badge&logo=redis&logoColor=white" alt="Redis" />
-  <img src="https://img.shields.io/badge/Gemini_AI-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white" alt="Gemini" />
-  <img src="https://img.shields.io/badge/SQLAlchemy-D71F00?style=for-the-badge&logo=sqlalchemy&logoColor=white" alt="SQLAlchemy" />
-  <img src="https://img.shields.io/badge/Pydantic-E92063?style=for-the-badge&logo=pydantic&logoColor=white" alt="Pydantic" />
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
-  <img src="https://img.shields.io/badge/Alembic-6BA81E?style=for-the-badge" alt="Alembic" />
-  <img src="https://img.shields.io/badge/JWT_Auth-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white" alt="JWT" />
-  <img src="https://img.shields.io/badge/shadcn/ui-000000?style=for-the-badge&logo=shadcnui&logoColor=white" alt="shadcn/ui" />
-  <img src="https://img.shields.io/badge/Recharts-22B5BF?style=for-the-badge" alt="Recharts" />
+  <a href="https://www.linkedin.com/in/abhishek-ayu/"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" /></a>
+  <img src="https://img.shields.io/badge/LLM_Powered-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white" alt="LLM" />
+  <img src="https://img.shields.io/badge/AI_Native-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white" alt="AI" />
+  <img src="https://img.shields.io/badge/AdSense_Alternative-4285F4?style=for-the-badge&logo=googleadsense&logoColor=white" alt="AdSense" />
 </p>
 
 <p align="center">
