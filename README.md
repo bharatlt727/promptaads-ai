@@ -39,23 +39,34 @@ The fastest way to run everything locally:
 ```bash
 git clone https://github.com/abhishekayu/promptads-ai.git
 cd promptads-ai
-cp .env.example .env        # Edit with your Gemini/OpenAI API key
-./start.sh                  # Starts all 6 services
+./start.sh
 ```
 
-**That's it.** The start script will:
+The wizard will ask you to choose:
 
-| Step | What it does                                                           |
-| ---- | ---------------------------------------------------------------------- |
-| 1    | Check `.env` and sync to `backend/.env`                                |
-| 2    | Start **PostgreSQL** (port 5433) — creates DB & role if needed         |
-| 3    | Start **Qdrant** vector DB (port 6333)                                 |
-| 4    | Start **Redis** (port 6379)                                            |
-| 5    | Install Python deps, run migrations, start **Backend API** (port 8000) |
-| 6    | Install Node deps, start **Dashboard** (port 3002)                     |
-| 7    | Install Node deps, start **Conversational AI** demo (port 3050)        |
+```
+How would you like to start?
 
-Press `Ctrl+C` to stop everything cleanly.
+  1) Auto Setup  — Install missing dependencies, configure DB, start everything
+  2) Manual      — Skip setup, just start the servers (deps already installed)
+```
+
+### Auto Setup (Option 1) — Fresh clone, nothing installed
+
+Walks you through 4 phases before starting servers:
+
+| Phase | What it does |
+|-------|-------------|
+| **1. Dependencies** | Checks Python 3.11+, Node.js 18+, PostgreSQL 16, Qdrant, Redis. If missing, asks `Install? [Y/n]` and installs via brew/apt/yum. If already installed, shows version with ✓ |
+| **2. Database** | Asks for PostgreSQL port, user, password, database name (smart defaults provided) |
+| **3. API Keys** | Asks for AI provider (Gemini/OpenAI) and API key. If existing `.env` found, asks to keep it |
+| **4. Project Deps** | Runs `pip install -r requirements.txt`, `npm install` for dashboard and chat app |
+
+Then starts all 6 servers automatically.
+
+### Manual (Option 2) — Dependencies already installed
+
+Skips setup, goes straight to starting servers. Use this for day-to-day development after initial setup.
 
 ### After starting
 
