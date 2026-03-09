@@ -29,7 +29,7 @@ logger = structlog.get_logger()
 # ---------------------------------------------------------------------------
 DEFAULT_RELEVANCE_WEIGHT: Final[float] = 0.70
 DEFAULT_BID_WEIGHT: Final[float] = 0.30
-DEFAULT_QUALITY_FLOOR: Final[float] = 0.55      # min relevance to be considered
+DEFAULT_QUALITY_FLOOR: Final[float] = 0.60      # min relevance to be considered
 DEFAULT_MAX_PER_ADVERTISER: Final[int] = 2       # diversity cap
 
 

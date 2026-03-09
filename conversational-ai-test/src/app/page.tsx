@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useRef, useEffect, FormEvent } from "react";
-import { Send, Bot, User, Sparkles, Trash2, MessageCircle, Zap, ArrowRight, Activity, Radio } from "lucide-react";
+import { useState, useRef, useEffect, useCallback, FormEvent } from "react";
+import { Send, Bot, User, Trash2, MessageCircle, Zap, ArrowRight, Activity, Radio } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 // types
 interface Ad {
@@ -20,7 +22,7 @@ interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
-  ad?: Ad | null;
+  ads?: Ad[];
   timestamp: Date;
 }
 
@@ -55,6 +57,27 @@ export default function ChatPage() {
     ].slice(0, 50));
   };
 
+  // Helper: read a fetch Response stream and call onChunk with each text piece
+  const readStream = useCallback(
+    async (
+      res: Response,
+      onChunk: (text: string) => void
+    ): Promise<string> => {
+      const reader = res.body!.getReader();
+      const decoder = new TextDecoder();
+      let full = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        full += chunk;
+        onChunk(chunk);
+      }
+      return full;
+    },
+    []
+  );
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const prompt = input.trim();
@@ -70,9 +93,32 @@ export default function ChatPage() {
     setInput("");
     setIsLoading(true);
 
+    // Create a placeholder assistant message that we'll stream into
+    const assistantId = crypto.randomUUID();
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: assistantId,
+        role: "assistant",
+        content: "",
+        timestamp: new Date(),
+      },
+    ]);
+
+    // Helper to update the streaming message
+    const updateMsg = (updater: (prev: Message) => Partial<Message>) => {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === assistantId ? { ...m, ...updater(m) } : m
+        )
+      );
+    };
+
     try {
       addLog("info", "Sending prompt: \"" + prompt.slice(0, 60) + "...\"");
-      const chatRes = await fetch("/api/chat", {
+
+      // Start chat stream AND ad fetch in parallel
+      const chatPromise = fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -82,57 +128,86 @@ export default function ChatPage() {
           })),
         }),
       });
-      const { text, error: chatError } = await chatRes.json();
-      if (chatError) throw new Error(chatError);
-      addLog("info", "AI response received (" + text.length + " chars)");
-      addLog("match", "SDK getAd(\"" + prompt.slice(0, 40) + "...\")");
 
-      let ad: Ad | null = null;
-      try {
-        const adRes = await fetch("/api/ad", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user_prompt: prompt }),
-        });
-        const adData = await adRes.json();
-        ad = adData.ad;
-        if (ad) {
-          addLog("match", "Matched: \"" + ad.title + "\" (relevance: " + (ad.relevance_score * 100).toFixed(0) + "%)");
+      const adsPromise = (async (): Promise<Ad[]> => {
+        try {
+          addLog("match", "SDK getAds(\"" + prompt.slice(0, 40) + "...\")" );
+          const adRes = await fetch("/api/ad", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user_prompt: prompt }),
+          });
+          const adData = await adRes.json();
+          const ads: Ad[] = adData.ads || [];
+          if (ads.length > 0) {
+            addLog("match", "Matched " + ads.length + " ads: " + ads.map((a: Ad) => '"' + a.title + '"').join(", "));
+          } else {
+            addLog("match", "No matching ads found");
+          }
+          return ads;
+        } catch (adErr: any) {
+          addLog("error", "Ad match failed: " + adErr.message);
+          return [];
+        }
+      })();
+
+      // Stream the full chat response to the UI immediately
+      const chatRes = await chatPromise;
+      if (!chatRes.ok) {
+        const errData = await chatRes.json().catch(() => ({}));
+        throw new Error(errData.error || "Chat request failed");
+      }
+
+      addLog("info", "Streaming response...");
+      const chatText = await readStream(chatRes, (chunk) => {
+        updateMsg((m) => ({ content: m.content + chunk }));
+      });
+      addLog("info", "Response complete (" + chatText.length + " chars)");
+
+      // Wait for ads result (likely already resolved since it ran in parallel)
+      const ads = await adsPromise;
+
+      if (ads.length > 0) {
+        // Append a natural recommendation at the end of the full response
+        try {
+          addLog("info", "Adding " + ads.length + " recommendations...");
+          const blendRes = await fetch("/api/blend", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ aiResponse: chatText, ads }),
+          });
+
+          if (blendRes.ok && blendRes.body) {
+            updateMsg((m) => ({ content: m.content + "\n\n" }));
+            const appendedText = await readStream(blendRes, (chunk) => {
+              updateMsg((m) => ({ content: m.content + chunk }));
+            });
+            if (appendedText) {
+              addLog("info", "Recommendations added (" + appendedText.length + " chars)");
+            }
+          }
+        } catch (blendErr: any) {
+          addLog("error", "Recommendation failed: " + blendErr.message);
+        }
+
+        // Track impressions + attach ads to message
+        updateMsg(() => ({ ads }));
+        for (const ad of ads) {
           addLog("impression", "trackImpression(\"" + ad.ad_id.slice(0, 8) + "...\")");
-          await fetch("/api/analytics", {
+          fetch("/api/analytics", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ ad_id: ad.ad_id, event: "impression" }),
-          });
-          addLog("impression", "Impression tracked");
-        } else {
-          addLog("match", "No matching ad found");
+          })
+            .then(() => addLog("impression", "Impression tracked for \"" + ad.title + "\""))
+            .catch(() => {});
         }
-      } catch (adErr: any) {
-        addLog("error", "Ad match failed: " + adErr.message);
       }
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: crypto.randomUUID(),
-          role: "assistant",
-          content: text,
-          ad,
-          timestamp: new Date(),
-        },
-      ]);
     } catch (err: any) {
       addLog("error", "Chat failed: " + err.message);
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: crypto.randomUUID(),
-          role: "assistant",
-          content: "Sorry, something went wrong. Please try again.",
-          timestamp: new Date(),
-        },
-      ]);
+      updateMsg(() => ({
+        content: "Sorry, something went wrong. Please try again.",
+      }));
     } finally {
       setIsLoading(false);
       inputRef.current?.focus();
@@ -314,7 +389,7 @@ export default function ChatPage() {
                       </div>
                     )}
                     <div
-                      className="max-w-[75%] rounded-xl px-3.5 py-2.5 text-[13px] leading-relaxed"
+                      className={"max-w-[75%] rounded-xl px-3.5 py-2.5 text-[13px] leading-relaxed" + (msg.role === "assistant" ? " prose-msg" : "")}
                       style={
                         msg.role === "user"
                           ? { background: "var(--accent)", color: "#fff" }
@@ -324,7 +399,18 @@ export default function ChatPage() {
                             }
                       }
                     >
-                      <div className="whitespace-pre-wrap">{msg.content}</div>
+                      {msg.role === "assistant" ? (
+                        <div className="markdown-body">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {msg.content}
+                          </ReactMarkdown>
+                          {isLoading && messages[messages.length - 1]?.id === msg.id && (
+                            <span className="inline-block w-[2px] h-[14px] ml-0.5 align-text-bottom animate-pulse" style={{ background: "var(--accent)" }} />
+                          )}
+                        </div>
+                      ) : (
+                        <div className="whitespace-pre-wrap">{msg.content}</div>
+                      )}
                       <div
                         className="text-[10px] mt-1.5"
                         style={{
@@ -355,107 +441,51 @@ export default function ChatPage() {
                     )}
                   </div>
 
-                  {/* Ad Card */}
-                  {msg.ad && (
-                    <div className="ml-10 mt-2.5 animate-fade-in">
-                      <div
-                        className="ad-gradient-border ad-shimmer relative max-w-[75%] rounded-xl overflow-hidden"
-                        style={{ background: "var(--bg-elevated)" }}
-                      >
-                        {msg.ad.image_url && (
-                          <div
-                            className="w-full h-32 overflow-hidden"
-                          >
+                  {/* Subtle product recommendations — looks like natural resources */}
+                  {msg.ads && msg.ads.length > 0 && (
+                    <div className="ml-10 mt-2 flex flex-wrap gap-2 animate-fade-in">
+                      {msg.ads.map((ad) => (
+                        <button
+                          key={ad.ad_id}
+                          onClick={() => handleAdClick(ad)}
+                          className="inline-flex items-center gap-2.5 px-3.5 py-2 rounded-lg transition-all hover:scale-[1.02] active:scale-[0.98] group"
+                          style={{
+                            background: "var(--bg-elevated)",
+                            border: "1px solid var(--border)",
+                          }}
+                        >
+                          {ad.image_url && (
                             <img
-                              src={msg.ad.image_url}
-                              alt={msg.ad.title}
-                              className="w-full h-full object-cover"
+                              src={ad.image_url}
+                              alt=""
+                              className="w-8 h-8 rounded-md object-cover shrink-0"
                             />
-                          </div>
-                        )}
-                        <div className="p-3.5">
-                          <div className="flex items-center gap-1.5 mb-2">
-                            <Sparkles
-                              className="w-3 h-3"
-                              style={{ color: "var(--accent)" }}
-                            />
-                            <span
-                              className="text-[9px] font-semibold uppercase tracking-[0.1em]"
-                              style={{ color: "var(--accent)" }}
+                          )}
+                          <div className="text-left">
+                            <p
+                              className="text-[12px] font-medium leading-tight"
+                              style={{ color: "var(--foreground)" }}
                             >
-                              Sponsored
-                            </span>
-                            <span
-                              className="ml-auto inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium"
-                              style={{
-                                background: "var(--accent-muted)",
-                                color: "var(--accent)",
-                              }}
+                              {ad.title}
+                            </p>
+                            <p
+                              className="text-[10px] mt-0.5"
+                              style={{ color: "var(--foreground-muted)" }}
                             >
-                              {(msg.ad.relevance_score * 100).toFixed(0)}% match
-                            </span>
+                              Learn more →
+                            </p>
                           </div>
-                          <p
-                            className="text-[13px] font-semibold mb-1"
-                            style={{ color: "var(--foreground)" }}
-                          >
-                            {msg.ad.title}
-                          </p>
-                          <p
-                            className="text-[12px] leading-relaxed mb-3"
-                            style={{ color: "var(--foreground-muted)" }}
-                          >
-                            {msg.ad.description || msg.ad.text}
-                          </p>
-                          <button
-                            onClick={() => handleAdClick(msg.ad!)}
-                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[11px] font-medium text-white rounded-lg transition-all group"
-                            style={{ background: "var(--accent)" }}
-                          >
-                            Learn more{" "}
-                            <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-                          </button>
-                        </div>
-                      </div>
+                          <ArrowRight
+                            className="w-3.5 h-3.5 shrink-0 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all"
+                            style={{ color: "var(--accent)" }}
+                          />
+                        </button>
+                      ))}
                     </div>
                   )}
                 </div>
               ))}
 
-              {isLoading && (
-                <div className="flex gap-2.5 animate-fade-in">
-                  <div
-                    className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
-                    style={{ background: "var(--accent-muted)" }}
-                  >
-                    <Bot
-                      className="w-3.5 h-3.5"
-                      style={{ color: "var(--accent)" }}
-                    />
-                  </div>
-                  <div
-                    className="rounded-xl px-4 py-3"
-                    style={{
-                      background: "var(--bg-elevated)",
-                    }}
-                  >
-                    <div className="flex gap-1 items-center">
-                      <div
-                        className="w-1.5 h-1.5 rounded-full dot-1"
-                        style={{ background: "var(--accent)" }}
-                      />
-                      <div
-                        className="w-1.5 h-1.5 rounded-full dot-2"
-                        style={{ background: "var(--accent)" }}
-                      />
-                      <div
-                        className="w-1.5 h-1.5 rounded-full dot-3"
-                        style={{ background: "var(--accent)" }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
               <div ref={messagesEndRef} />
             </div>
           </div>

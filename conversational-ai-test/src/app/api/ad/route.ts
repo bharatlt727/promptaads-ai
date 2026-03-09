@@ -7,24 +7,24 @@ export async function POST(req: NextRequest) {
   try {
     const { user_prompt } = await req.json();
 
-    const res = await fetch(`${PROMPTADS_URL}/engine/match-ad`, {
+    const res = await fetch(`${PROMPTADS_URL}/engine/match-ads`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ user_prompt }),
+      body: JSON.stringify({ user_prompt, n: 5 }),
     });
 
     if (!res.ok) {
-      // No ad found is not an error — just return null
+      // No ads found is not an error — just return empty
       if (res.status === 404) {
-        return NextResponse.json({ ad: null });
+        return NextResponse.json({ ads: [] });
       }
       throw new Error(`PromptAds API error: ${res.status}`);
     }
 
-    const ad = await res.json();
-    return NextResponse.json({ ad });
+    const data = await res.json();
+    return NextResponse.json({ ads: data.ads || [] });
   } catch (error: any) {
     console.error("Ad match error:", error);
-    return NextResponse.json({ ad: null });
+    return NextResponse.json({ ads: [] });
   }
 }
