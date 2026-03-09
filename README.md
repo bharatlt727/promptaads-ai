@@ -51,13 +51,6 @@
 </p>
 
 ### Video Walkthrough
-
-<p align="center">
-  <a href="https://youtu.be/YOUR_VIDEO_ID">
-    <img src="https://img.shields.io/badge/▶_Watch_Demo-YouTube-red?style=for-the-badge&logo=youtube&logoColor=white" alt="Watch Demo" />
-  </a>
-</p>
-
 ---
 
 ## What is PromptAds AI?
