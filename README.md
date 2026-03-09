@@ -1,15 +1,108 @@
 <p align="center">
-  <h1 align="center">✦ PromptAds AI</h1>
-  <p align="center">
-    <strong>AI-native contextual advertising engine/AdSense for chatbots, copilots and LLM applications.</strong>
-  </p>
-  <p align="center">
-    <a href="#-one-command-start">Quick Start</a> &middot;
-    <a href="#-how-it-works">How It Works</a> &middot;
-    <a href="#-sdk-integration">SDK Guide</a> &middot;
-    <a href="#-manual-setup">Manual Setup</a> &middot;
-    <a href="#-api-reference">API Docs</a>
-  </p>
+
+```
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │                                                                      │
+  │   ██████╗ ██████╗  ██████╗ ███╗   ███╗██████╗ ████████╗             │
+  │   ██╔══██╗██╔══██╗██╔═══██╗████╗ ████║██╔══██╗╚══██╔══╝             │
+  │   ██████╔╝██████╔╝██║   ██║██╔████╔██║██████╔╝   ██║                │
+  │   ██╔═══╝ ██╔══██╗██║   ██║██║╚██╔╝██║██╔═══╝    ██║                │
+  │   ██║     ██║  ██║╚██████╔╝██║ ╚═╝ ██║██║        ██║                │
+  │   ╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚═╝╚═╝        ╚═╝                │
+  │                                                                      │
+  │          █████╗ ██████╗ ███████╗     █████╗ ██╗                      │
+  │         ██╔══██╗██╔══██╗██╔════╝    ██╔══██╗██║                      │
+  │         ███████║██║  ██║███████╗    ███████║██║                      │
+  │         ██╔══██║██║  ██║╚════██║    ██╔══██║██║                      │
+  │         ██║  ██║██████╔╝███████║    ██║  ██║██║                      │
+  │         ╚═╝  ╚═╝╚═════╝ ╚══════╝    ╚═╝  ╚═╝╚═╝                      │
+  │                                                                      │
+  │      ⚡ AI-Native Contextual Ad Engine                               │
+  │      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                               │
+  │      Monetize your AI — no tracking, no cookies, no banners          │
+  │                                                                      │
+  │      by Abhishek Verma                                               │
+  │                                                                      │
+  │      FastAPI · Next.js · Gemini · Qdrant · PostgreSQL · Redis        │
+  │                                                                      │
+  └──────────────────────────────────────────────────────────────────────┘
+```
+
+</p>
+
+<h1 align="center">✦ PromptAds AI</h1>
+
+<p align="center">
+  <strong>Monetize your AI app with contextual ads — no tracking, no cookies, no banners.</strong>
+</p>
+
+<p align="center">
+  <em>AI-native contextual advertising engine &middot; AdSense for chatbots, copilots & LLM apps</em><br/>
+  <em>by <strong>Abhishek Verma</strong></em>
+</p>
+
+<p align="center">
+  <a href="https://github.com/abhishekayu/promptads-ai/stargazers"><img src="https://img.shields.io/github/stars/abhishekayu/promptads-ai?style=for-the-badge" alt="GitHub stars" /></a>
+  <a href="https://github.com/abhishekayu/promptads-ai/blob/main/LICENSE"><img src="https://img.shields.io/github/license/abhishekayu/promptads-ai?style=for-the-badge" alt="License" /></a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
+  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/Next.js_15-000000?style=for-the-badge&logo=next.js&logoColor=white" alt="Next.js" />
+  <img src="https://img.shields.io/badge/React_19-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React" />
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/PostgreSQL_16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/Qdrant-DC382D?style=for-the-badge&logo=qdrant&logoColor=white" alt="Qdrant" />
+  <img src="https://img.shields.io/badge/Redis-FF4438?style=for-the-badge&logo=redis&logoColor=white" alt="Redis" />
+  <img src="https://img.shields.io/badge/Gemini_AI-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white" alt="Gemini" />
+  <img src="https://img.shields.io/badge/SQLAlchemy-D71F00?style=for-the-badge&logo=sqlalchemy&logoColor=white" alt="SQLAlchemy" />
+  <img src="https://img.shields.io/badge/Pydantic-E92063?style=for-the-badge&logo=pydantic&logoColor=white" alt="Pydantic" />
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
+  <img src="https://img.shields.io/badge/Alembic-6BA81E?style=for-the-badge" alt="Alembic" />
+  <img src="https://img.shields.io/badge/JWT_Auth-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white" alt="JWT" />
+  <img src="https://img.shields.io/badge/shadcn/ui-000000?style=for-the-badge&logo=shadcnui&logoColor=white" alt="shadcn/ui" />
+  <img src="https://img.shields.io/badge/Recharts-22B5BF?style=for-the-badge" alt="Recharts" />
+</p>
+
+<p align="center">
+  <a href="#-one-command-start">Quick Start</a> &middot;
+  <a href="#-demo">Demo</a> &middot;
+  <a href="#-how-it-works">How It Works</a> &middot;
+  <a href="#-sdk-integration">SDK Guide</a> &middot;
+  <a href="#-manual-setup">Manual Setup</a> &middot;
+  <a href="#-api-reference">API Docs</a>
+</p>
+
+---
+
+## ✦ Demo
+
+### Advertiser Dashboard
+
+<p align="center">
+  <img src="docs/images/dashboard.png" alt="PromptAds Dashboard" width="800" />
+</p>
+
+### Chatbot Integration
+
+<p align="center">
+  <img src="docs/images/chat-demo.png" alt="Conversational AI Demo" width="800" />
+</p>
+
+### Video Walkthrough
+
+<p align="center">
+  <a href="https://youtu.be/YOUR_VIDEO_ID">
+    <img src="https://img.shields.io/badge/▶_Watch_Demo-YouTube-red?style=for-the-badge&logo=youtube&logoColor=white" alt="Watch Demo" />
+  </a>
 </p>
 
 ---
