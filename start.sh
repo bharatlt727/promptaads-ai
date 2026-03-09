@@ -10,6 +10,15 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+# ── Ensure Homebrew is on PATH (macOS) ───────────────────────────────
+if [[ "$(uname)" == "Darwin" ]]; then
+    if [[ -f "/opt/homebrew/bin/brew" ]]; then
+        eval "$(/opt/homebrew/bin/brew shellenv)"
+    elif [[ -f "/usr/local/bin/brew" ]]; then
+        eval "$(/usr/local/bin/brew shellenv)"
+    fi
+fi
+
 # ── Colours ──────────────────────────────────────────────────────────
 G="\033[92m"   # green
 C="\033[96m"   # cyan
@@ -745,11 +754,19 @@ echo -e "${B}[3/6]${D} ${C}Redis (port $REDIS_PORT)…${D}"
 if command -v redis-cli &>/dev/null && redis-cli -p "$REDIS_PORT" ping &>/dev/null; then
     echo -e "  ${G}✓ Already running${D}"
 else
+    # Check if redis-server is available directly OR installed via Homebrew
+    REDIS_AVAILABLE=false
     if command -v redis-server &>/dev/null; then
+        REDIS_AVAILABLE=true
+    elif command -v brew &>/dev/null && brew list redis &>/dev/null; then
+        REDIS_AVAILABLE=true
+    fi
+
+    if $REDIS_AVAILABLE; then
         echo -e "  ${Y}Starting…${D}"
-        if command -v brew &>/dev/null; then
+        if command -v brew &>/dev/null && brew list redis &>/dev/null; then
             brew services start redis 2>/dev/null || true
-        else
+        elif command -v redis-server &>/dev/null; then
             redis-server --port "$REDIS_PORT" --daemonize yes 2>/dev/null || true
         fi
         sleep 2
