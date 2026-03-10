@@ -12,13 +12,6 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/abhishekayu/promptads-ai/stargazers"><img src="https://img.shields.io/github/stars/abhishekayu/promptads-ai?style=for-the-badge" alt="GitHub stars" /></a>
-  <a href="https://github.com/abhishekayu/promptads-ai/blob/main/LICENSE"><img src="https://img.shields.io/github/license/abhishekayu/promptads-ai?style=for-the-badge" alt="License" /></a>
-  <img src="https://img.shields.io/github/downloads/abhishekayu/promptads-ai/total?style=for-the-badge&label=Downloads" alt="Downloads" />
-  <img src="https://img.shields.io/github/watchers/abhishekayu/promptads-ai?style=for-the-badge&label=Viewers" alt="Viewers" />
-</p>
-
-<p align="center">
   <a href="https://www.linkedin.com/in/abhishek-ayu/"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" /></a>
   <img src="https://img.shields.io/badge/LLM_Powered-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white" alt="LLM" />
   <img src="https://img.shields.io/badge/AI_Native-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white" alt="AI" />
