@@ -36,21 +36,23 @@
 
 ---
 
-## ✦ Demo
+## ✦ Demo Video Walkthrough
 
 ### Advertiser Dashboard
 
 <p align="center">
-  <img src="docs/images/dashboard.png" alt="PromptAds Dashboard" width="800" />
+
+https://github.com/user-attachments/assets/57fbb55e-919d-40a5-b805-fd4f27b54af2
+
 </p>
 
 ### Chatbot Integration
 
 <p align="center">
-  <img src="docs/images/chat-demo.png" alt="Conversational AI Demo" width="800" />
-</p>
 
-### Video Walkthrough
+https://github.com/user-attachments/assets/7119ef2a-f032-43e8-bd3e-65efcb4ce9c8
+
+</p>
 ---
 
 ## What is PromptAds AI?
