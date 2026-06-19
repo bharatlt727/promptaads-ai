@@ -44,7 +44,7 @@ class VectorSearchService:
     """Search Qdrant for ad candidates and verify them in PostgreSQL."""
 
     DEFAULT_TOP_K: int = 10
-    MIN_SCORE_THRESHOLD: float = 0.60           # ignore weak / irrelevant matches
+    MIN_SCORE_THRESHOLD: float = 0.10           # ignore weak / irrelevant matches
 
     _instance: VectorSearchService | None = None
 
